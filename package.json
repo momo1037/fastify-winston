@@ -1,0 +1,41 @@
+{
+  "name": "fastify-winston",
+  "version": "1.0.0",
+  "description": "Winston logger for fastify",
+  "type": "module",
+  "exports": "./mod.js",
+  "author": "w72e@qq.com",
+  "license": "MIT",
+  "repository": "github:w72/fastify-winston",
+  "scripts": {
+    "build": "tsc"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "fastify",
+    "fastify-plugin",
+    "winston",
+    "logger"
+  ],
+  "files": [
+    "mod.js",
+    "mod.ts",
+    "mod.d.ts",
+    "package.json",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "dependencies": {
+    "chalk": "5"
+  },
+  "peerDependencies": {
+    "winston": "3",
+    "fastify": "4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.0",
+    "typescript": "^5.1.3"
+  }
+}

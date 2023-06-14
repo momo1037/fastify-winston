@@ -1,7 +1,12 @@
 import chalk from "chalk";
 import type { FastifyLogFn, LogLevel } from "fastify";
 import { serializers } from "fastify/lib/logger.js";
-import { format, type LoggerOptions, transports } from "winston";
+import {
+  format,
+  type LoggerOptions,
+  type Logger as WinstonLogger,
+  transports,
+} from "winston";
 import Logger from "winston/lib/winston/logger.js";
 
 const LEVEL = Symbol.for("level");
@@ -16,7 +21,10 @@ const LEVELS: Record<LogLevel, number> = {
   silent: 6,
 };
 
-export type FastifyWinstonLogger = Omit<Logger, LogLevel | "log" | "child"> & {
+export type FastifyWinstonLogger = Omit<
+  WinstonLogger,
+  LogLevel | "log" | "child"
+> & {
   level: string;
   fatal: FastifyLogFn;
   error: FastifyLogFn;

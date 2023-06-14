@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import type { FastifyLogFn, LogLevel } from "fastify";
 import { serializers } from "fastify/lib/logger.js";
 import {
@@ -19,6 +18,14 @@ const LEVELS: Record<LogLevel, number> = {
   debug: 4,
   trace: 5,
   silent: 6,
+};
+const COLORS: Record<string, string> = {
+  fatal: "41", // red bg
+  error: "31", // red
+  warn: "33", // yellow
+  info: "32", // green
+  debug: "34", // blue
+  trace: "90", // gray
 };
 
 export type FastifyWinstonLogger = Omit<
@@ -54,9 +61,9 @@ export const prettyFormat = format.combine(
     const str: string[] = [];
 
     str.push(`[${info.timestamp}]`);
-    str.push(` ${chalk.green(info.level.toUpperCase())}`);
+    str.push(` \x1b[${COLORS[info.level]}m${info.level.toUpperCase()}\x1b[0m:`);
 
-    if (info.message) str.push(` ${chalk.blue(info.message)}`);
+    if (info.message) str.push(` \x1b[36m${info.message}\x1b[0m`);
 
     if (Object.keys(info.metadata).length) {
       const json = JSON.stringify(info.metadata, null, 4)
@@ -128,12 +135,14 @@ export default function fastifyWinston(
       this.log(level, ...args);
     };
 
-  const { pretty, ...restOptions } = options;
+  const { pretty, level, ...restOptions } = options;
 
   return new DerivedLogger({
+    level,
     levels: LEVELS,
     format: pretty ? prettyFormat : jsonFormat,
     transports: new transports.Console(),
+    silent: level === "silent",
     ...restOptions,
   }) as unknown as FastifyWinstonLogger;
 }

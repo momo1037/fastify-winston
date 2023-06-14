@@ -25,7 +25,6 @@ export type FastifyWinstonLogger = Omit<
   WinstonLogger,
   LogLevel | "log" | "child"
 > & {
-  level: string;
   fatal: FastifyLogFn;
   error: FastifyLogFn;
   warn: FastifyLogFn;

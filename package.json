@@ -1,6 +1,6 @@
 {
   "name": "fastify-winston",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Winston logger for fastify",
   "type": "module",
   "types": "mod.d.ts",
@@ -22,7 +22,6 @@
   ],
   "files": [
     "mod.js",
-    "mod.ts",
     "mod.d.ts"
   ],
   "dependencies": {

@@ -1,7 +1,7 @@
 # fastify-winston
 
 ![](https://img.shields.io/badge/module_type-ESM_only-brightgreen)
-![](https://img.shields.io/npm/v/fastify-winston)
+[![](https://img.shields.io/npm/v/fastify-winston)](https://www.npmjs.com/package/fastify-winston)
 ![](https://img.shields.io/node/v/fastify-winston)
 ![](https://img.shields.io/npm/dependency-version/fastify-winston/peer/fastify)
 ![](https://img.shields.io/npm/dependency-version/fastify-winston/peer/winston)

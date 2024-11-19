@@ -1,13 +1,13 @@
 {
   "name": "fastify-winston",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Winston logger for fastify",
   "type": "module",
   "types": "mod.d.ts",
   "exports": "./mod.js",
-  "author": "w72e@qq.com",
+  "author": "momo1037@qq.com",
   "license": "MIT",
-  "repository": "github:w72/fastify-winston",
+  "repository": "github:momo1037/fastify-winston",
   "scripts": {
     "build": "tsc"
   },

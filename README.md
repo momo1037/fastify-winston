@@ -20,12 +20,34 @@ npm i fastify-winston winston
 import fastify from "fastify";
 import fastifyWinston from "fastify-winston";
 
+// Fastify v5: use loggerInstance
 const app = fastify({
-  logger: fastifyWinston({ pretty: true }),
+  loggerInstance: fastifyWinston({ pretty: true }),
 });
 
 app.log.info("hello world");
-app.listen();
+await app.listen({ port: 3000 });
+```
+
+Or adapt an existing Winston instance:
+
+```js
+import fastify from "fastify";
+import { createLogger, format, transports } from "winston";
+import fastifyWinston from "fastify-winston";
+
+const win = createLogger({
+  levels: { fatal: 0, error: 1, warn: 2, info: 3, debug: 4, trace: 5, silent: 6 },
+  format: format.combine(format.splat(), format.timestamp(), format.json()),
+  transports: new transports.Console(),
+});
+
+const app = fastify({
+  loggerInstance: fastifyWinston(win),
+});
+
+app.log.info("hello from external winston");
+await app.listen({ port: 3000 });
 ```
 
 ## License

@@ -5,8 +5,8 @@ import {
   type LoggerOptions,
   type Logger as WinstonLogger,
   transports,
+  createLogger,
 } from "winston";
-import Logger from "winston/lib/winston/logger.js";
 
 const LEVEL = Symbol.for("level");
 const SPLAT = Symbol.for("splat");
@@ -28,17 +28,13 @@ const COLORS: Record<string, string> = {
   trace: "90", // gray
 };
 
-export type FastifyWinstonLogger = Omit<
-  WinstonLogger,
-  LogLevel | "log" | "child"
-> & {
+export type FastifyWinstonLogger = Omit<WinstonLogger, "log" | "child"> & {
   fatal: FastifyLogFn;
   error: FastifyLogFn;
   warn: FastifyLogFn;
   info: FastifyLogFn;
   debug: FastifyLogFn;
   trace: FastifyLogFn;
-  silent: FastifyLogFn;
   log(level: LogLevel, ...args: unknown[]): void;
   child(meta: Record<string, unknown>): FastifyWinstonLogger;
 };
@@ -61,11 +57,13 @@ export const prettyFormat = format.combine(
     const str: string[] = [];
 
     str.push(`[${info.timestamp}]`);
-    str.push(` \x1b[${COLORS[info.level]}m${info.level.toUpperCase()}\x1b[0m:`);
+    str.push(
+      ` \x1b[${COLORS[info.level]}m${String(info.level).toUpperCase()}\x1b[0m:`
+    );
 
     if (info.message) str.push(` \x1b[36m${info.message}\x1b[0m`);
 
-    if (Object.keys(info.metadata).length) {
+    if (info.metadata && Object.keys(info.metadata).length) {
       const json = JSON.stringify(info.metadata, null, 4)
         .split("\n")
         .slice(1, -1)
@@ -87,20 +85,15 @@ export const prettyFormat = format.combine(
   })
 );
 
-export default function fastifyWinston(
-  options: FastifyWinstonLoggerOptions = {}
-): FastifyWinstonLogger {
-  class DerivedLogger extends Logger {
-    constructor(options: LoggerOptions) {
-      super(options);
-    }
-  }
+function decorate(base: WinstonLogger): FastifyWinstonLogger {
+  const logger = base as unknown as FastifyWinstonLogger;
 
-  const proto = DerivedLogger.prototype as unknown as FastifyWinstonLogger;
-
-  proto.log = function (level, ...args) {
+  logger.log = function (
+    this: WinstonLogger,
+    level: LogLevel,
+    ...args: unknown[]
+  ) {
     const [arg0, arg1] = args;
-
     if (!arg0) return;
 
     let info: Record<string | symbol, unknown> = {};
@@ -125,24 +118,56 @@ export default function fastifyWinston(
 
     info[LEVEL] = info.level = level;
 
-    Object.assign(info, this.defaultMeta);
+    info = { ...base.defaultMeta, ...info };
 
-    this.write(info);
+    base.write(info);
   };
 
-  for (const level of Object.keys(LEVELS) as LogLevel[])
-    proto[level] = function (...args: unknown[]) {
+  // 确保 levels 映射存在（适配外部实例）
+  base.levels = LEVELS;
+
+  for (const level of Object.keys(LEVELS) as LogLevel[]) {
+    if (level === "silent") continue; // 不暴露 silent 方法
+    (logger as any)[level] = function (...args: unknown[]) {
       this.log(level, ...args);
     };
+  }
 
-  const { pretty, level, ...restOptions } = options;
+  const origChild = base.child.bind(base);
+  logger.child = function (meta: Record<string, unknown>) {
+    return decorate(origChild(meta));
+  };
 
-  return new DerivedLogger({
+  return logger;
+}
+
+export default function fastifyWinston(
+  optionsOrInstance: FastifyWinstonLoggerOptions | WinstonLogger = {}
+): FastifyWinstonLogger {
+  const isInstance =
+    optionsOrInstance &&
+    typeof optionsOrInstance === "object" &&
+    "child" in optionsOrInstance &&
+    "write" in optionsOrInstance;
+
+  if (isInstance) {
+    const base = optionsOrInstance as WinstonLogger;
+    // 适配外部实例：确保 levels 映射
+    base.levels = LEVELS;
+    return decorate(base);
+  }
+
+  const { pretty, level, ...restOptions } =
+    optionsOrInstance as FastifyWinstonLoggerOptions;
+
+  const base = createLogger({
     level,
     levels: LEVELS,
     format: pretty ? prettyFormat : jsonFormat,
     transports: new transports.Console(),
     silent: level === "silent",
     ...restOptions,
-  }) as unknown as FastifyWinstonLogger;
+  });
+
+  return decorate(base);
 }

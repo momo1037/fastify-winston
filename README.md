@@ -16,6 +16,11 @@ npm i fastify-winston winston
 
 ## Usage
 
+### Compatibility
+
+- v1.x supports `fastify@4`
+- v2.x supports `fastify@5`
+
 ```js
 import fastify from "fastify";
 import fastifyWinston from "fastify-winston";
@@ -29,7 +34,21 @@ app.log.info("hello world");
 await app.listen({ port: 3000 });
 ```
 
-Or adapt an existing Winston instance:
+### Fastify v4
+
+```js
+import fastify from "fastify";
+import fastifyWinston from "fastify-winston";
+
+const app = fastify({
+  logger: fastifyWinston({ pretty: true }),
+});
+
+app.log.info("hello world");
+await app.listen({ port: 3000 });
+```
+
+### Use an existing Winston instance
 
 ```js
 import fastify from "fastify";

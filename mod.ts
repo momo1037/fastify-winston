@@ -1,5 +1,5 @@
 import type { FastifyLogFn, LogLevel } from "fastify";
-import { serializers } from "fastify/lib/logger.js";
+import { serializers } from "fastify/lib/logger-pino.js";
 import {
   format,
   type LoggerOptions,
@@ -35,6 +35,7 @@ export type FastifyWinstonLogger = Omit<WinstonLogger, "log" | "child"> & {
   info: FastifyLogFn;
   debug: FastifyLogFn;
   trace: FastifyLogFn;
+  silent: FastifyLogFn;
   log(level: LogLevel, ...args: unknown[]): void;
   child(meta: Record<string, unknown>): FastifyWinstonLogger;
 };
